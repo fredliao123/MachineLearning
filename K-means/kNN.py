@@ -3,6 +3,7 @@ import operator
 from numpy import *
 import matplotlib
 import matplotlib.pyplot as plt
+from os import  listdir #用于显示文件夹下的文件
 
 
 def classify(inX, dataSet, labels, k):
@@ -63,11 +64,44 @@ def datingClassTest():
         if (classfierResult != datingLabels[i]): errorCount += 1.0
     print "total error is %f" % (errorCount / float(numTestVecs))
 
+def img2vector(filename):
+    returnVect = zeros((1,1024))
+    fr = open(filename)
+    for i in range(32):
+        lineStr = fr.readline()
+        for j in range (32):
+            returnVect[0, 32*i+j] = int(lineStr[j])
+    return returnVect
+
+def handwritingClassTest():
+    hwLabels = []
+    trainingFileList = listdir('trainingDigits')
+    m = len(trainingFileList)
+    trainingMat = zeros((m , 1024))
+    for i in range(m):
+        fileNameStr = trainingFileList[i]
+        fileStr = fileNameStr.split('.')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        hwLabels.append(classNumStr)
+        trainingMat[i,:] = img2vector('trainingDigits/%s' % fileNameStr)
+    testFileList = listdir('testDigits')
+    errorCount = 0.0
+    mTest = len(testFileList)
+    for j in range(mTest):
+        fileNameStr = testFileList[j]
+        fileStr = fileNameStr.split('.')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        vectorUnderTest = img2vector('testDigits/%s' %fileNameStr)
+        classfyResult = classify(vectorUnderTest, trainingMat , hwLabels ,3)
+        print "the classfier comes back with %d ,the right answer is %d" %(classfyResult, classNumStr)
+        if(classfyResult != classNumStr):
+            errorCount += 1.0
+    print "\nthe total error is %d" %errorCount
+    print "\nthe error rate is %f" %(errorCount/float(mTest))
+
+
+
+
 
 if __name__ == '__main__':
-    datingDataMat, datingLabels = file2matrix('datingTestSet2.txt')
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.scatter(datingDataMat[:, 0], datingDataMat[:, 1], 15.0 * array(datingLabels), 15.0 * array(datingLabels))
-    # plt.show()
-    datingClassTest()
+    handwritingClassTest()
