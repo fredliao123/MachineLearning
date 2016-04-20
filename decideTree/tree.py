@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+#ID3算法
+import treePlotter
 from math import log
 import operator
 
@@ -85,6 +87,33 @@ def createTree(dataSet, labels):  # 这个代码需要好好看看
     return myTree
 
 
+def classify(inputTree, featLabels, testVec):  # 这个函数通过已有的决策树对未知分类的数据进行分类
+    firstStr = inputTree.keys()[0]
+    secondDict = inputTree[firstStr]
+    featIndex = featLabels.index(firstStr)
+    for key in secondDict.keys():
+        if testVec[featIndex] == key:
+            if type(secondDict[key]).__name__ == dict:
+                classLabel1 = classify(secondDict[key], featLabels, testVec)
+            else:
+                classLabel1 = secondDict[key]
+    return classLabel1
+
+
+def storeTree(inputTree, filename):
+    import pickle
+    fw = open(filename, 'w')
+    pickle.dump(inputTree,fw)
+    fw.close()
+
+def grabTree(filename):
+    import pickle
+    fr = open(filename)
+    return pickle.load(fr)
+
 if __name__ == '__main__':
-    dataset, labels = createDataSet();
-    print createTree(dataset, labels)
+    fr = open('lenses.txt')
+    lenses = [inst.strip().split('\t') for inst in fr.readlines()]
+    lensesLabels=['age', 'prescript', 'astigmatic', 'tearRate']
+    lensesTree = createTree(lenses,lensesLabels)
+    treePlotter.createPlot(lensesTree)
